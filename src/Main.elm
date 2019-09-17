@@ -163,8 +163,8 @@ viewDocument model =
 
 
 characterCard data =
-    Element.layout [] <|
-        Element.column []
+    Element.layout [ Element.centerX ] <|
+        Element.column [ Element.centerX, Element.centerY ]
             [ Element.row
                 [ Element.width Element.fill
                 , Element.height Element.fill
