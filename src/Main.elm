@@ -18,7 +18,8 @@ import Json.Decode exposing (Decoder, field, string)
 import RemoteData exposing (RemoteData)
 import StarWars.Interface exposing (Character)
 import StarWars.Interface.Character as Character
-import StarWars.Object.Human
+import StarWars.Object exposing (Human)
+import StarWars.Object.Human as Human exposing (..)
 import StarWars.Query as Query
 import StarWars.Scalar exposing (Id)
 
@@ -59,18 +60,19 @@ init _ =
 
 
 type alias Response =
-    Character
+    Maybe Human
 
 
-type alias Character =
+type alias Human =
     { name : String
     , avatarUrl : String
-    , id : Id
-    , friends : List String
+    , homePlanet : Maybe String
     }
 
 
 
+-- , id : Id
+-- , friends : List String
 -- Query  hero {
 --     { name
 --     id
@@ -81,20 +83,25 @@ type alias Character =
 -- }
 
 
-query : SelectionSet Response RootQuery
-query =
-    Query.hero identity
-        (SelectionSet.succeed Character
-            |> with Character.name
-            |> with Character.avatarUrl
-            |> with Character.id
-            |> with (Character.friends Character.name)
-        )
+query : Id -> SelectionSet Response RootQuery
+query id =
+    Query.human { id = id } <|
+        SelectionSet.map3 Human
+            Human.avatarUrl
+            Human.name
+            Human.homePlanet
+
+
+
+-- Human.id
+-- (Human.friends Character.name)
+-- Human.homePlanet
 
 
 makeRequest : Cmd Msg
 makeRequest =
-    query
+    StarWars.Scalar.Id "1001"
+        |> query
         |> Graphql.Http.queryRequest "https://elm-graphql.herokuapp.com"
         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
 
@@ -157,8 +164,14 @@ viewDocument model =
                 -- [ div [] [ Html.text data.name ]
                 -- , div [] [ Html.text <| Debug.toString data.id ]
                 -- , div [] (List.map Html.text data.friends)
-                -- ]
-                [ characterCard data ]
+                -- -- ]
+                -- [ characterCard (Human "Robinson" "ramirez" (Just "ep")) ]
+                case data.homePlanet of
+                    Just homePlanet ->
+                        [ characterCard (Human data.name data.avatarUrl data.homePlanet) ]
+
+                    Nothing ->
+                        [ characterCard (Human data.name data.avatarUrl data.homePlanet) ]
             }
 
 
@@ -206,8 +219,15 @@ characterCard data =
                         , Font.color Brand.subtleTextColor
                         ]
                       <|
-                        Element.text "Friends:"
-                    , Element.column [ Element.centerX ] <| List.map Element.text data.friends
+                        case data.homePlanet of
+                            Just homePlanet ->
+                                Element.text homePlanet
+
+                            Nothing ->
+                                Element.none
+
+                    --     Element.text "Friends:"
+                    -- , Element.column [ Element.centerX ] <| List.map Element.text data.friends
                     ]
                 ]
             ]
