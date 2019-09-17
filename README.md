@@ -1,9 +1,12 @@
 # gqelm
 
-GraphQL playground implementation
+A walk through of the examples directory in dillonkearns/elm-graphql library. 
+
 
 ## Getting Started
 
+Set up basic project structure using elm-app-gen
+<details><summary>Run project</summary>
 ### Install Dependencies
 
 `yarn install`
@@ -66,3 +69,4 @@ really useful!
 
 Parcel build and bundles the application's assets into individual HTML, CSS, and
 JavaScript files. It also runs the live-server used during development.
+</details>
