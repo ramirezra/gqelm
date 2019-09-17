@@ -11,7 +11,8 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode exposing (Decoder, field, string)
 import RemoteData exposing (RemoteData)
-import SCodecs exposing (Id)
+import StarWars.Interface exposing (Character)
+import StarWars.Interface.Character as Character
 import StarWars.Object.Human
 import StarWars.Query as Query
 import StarWars.Scalar exposing (Id)
@@ -48,12 +49,35 @@ init _ =
 
 
 type alias Response =
-    Maybe StarWars.Scalar.Id
+    Character
 
 
-query : SelectionSet (Maybe StarWars.Scalar.Id) RootQuery
+type alias Character =
+    { name : String
+    , id : Id
+    , friends : List String
+    }
+
+
+query : SelectionSet Response RootQuery
 query =
-    Query.human { id = StarWars.Scalar.Id "1001" } StarWars.Object.Human.id
+    Query.hero identity characterInfoSelection
+
+
+
+-- characterInfo on Characater {
+--     { name
+--     id
+--     friends {
+--         name
+--         }
+--     }
+-- }
+
+
+characterInfoSelection : SelectionSet Character StarWars.Interface.Character
+characterInfoSelection =
+    SelectionSet.map3 Character Character.name Character.id (Character.friends Character.name)
 
 
 makeRequest : Cmd Msg

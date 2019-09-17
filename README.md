@@ -7,6 +7,7 @@ A walk through of the examples directory in dillonkearns/elm-graphql library.
 
 Set up basic project structure using elm-app-gen
 <details><summary>Run project</summary>
+
 ### Install Dependencies
 
 `yarn install`
