@@ -1,10 +1,15 @@
 module Main exposing (main)
 
+import Brand
 import Browser
 import Debug
+import Element exposing (Element)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 import Graphql.Http
 import Graphql.Operation exposing (RootQuery)
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -39,6 +44,11 @@ type alias Model =
     RemoteData (Graphql.Http.Error Response) Response
 
 
+
+-- type alias GraphqlData a =
+--     RemoteData Graphql.Http.Error a
+
+
 type alias Flags =
     ()
 
@@ -54,18 +64,14 @@ type alias Response =
 
 type alias Character =
     { name : String
+    , avatarUrl : String
     , id : Id
     , friends : List String
     }
 
 
-query : SelectionSet Response RootQuery
-query =
-    Query.hero identity characterInfoSelection
 
-
-
--- characterInfo on Characater {
+-- Query  hero {
 --     { name
 --     id
 --     friends {
@@ -75,9 +81,15 @@ query =
 -- }
 
 
-characterInfoSelection : SelectionSet Character StarWars.Interface.Character
-characterInfoSelection =
-    SelectionSet.map3 Character Character.name Character.id (Character.friends Character.name)
+query : SelectionSet Response RootQuery
+query =
+    Query.hero identity
+        (SelectionSet.succeed Character
+            |> with Character.name
+            |> with Character.avatarUrl
+            |> with Character.id
+            |> with (Character.friends Character.name)
+        )
 
 
 makeRequest : Cmd Msg
@@ -117,6 +129,85 @@ subscriptions model =
 
 viewDocument : Model -> Browser.Document Msg
 viewDocument model =
-    { title = "Hello"
-    , body = [ div [] [ Html.text (Debug.toString model) ] ]
-    }
+    case model of
+        RemoteData.NotAsked ->
+            { title = "Not Asked"
+            , body =
+                [ div [] [ Html.text "Not Asked" ]
+                ]
+            }
+
+        RemoteData.Loading ->
+            { title = "Loading"
+            , body =
+                [ div [] [ Html.text "Loading" ]
+                ]
+            }
+
+        RemoteData.Failure err ->
+            { title = "Error"
+            , body =
+                [ div [] [ Html.text (Debug.toString err) ]
+                ]
+            }
+
+        RemoteData.Success data ->
+            { title = "Hello"
+            , body =
+                -- [ div [] [ Html.text data.name ]
+                -- , div [] [ Html.text <| Debug.toString data.id ]
+                -- , div [] (List.map Html.text data.friends)
+                -- ]
+                [ characterCard data ]
+            }
+
+
+characterCard data =
+    Element.layout [] <|
+        Element.column []
+            [ Element.row
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.spacing 10
+                , Element.paddingXY 0 10
+                , Element.centerX
+                ]
+                [ Element.column
+                    [ Element.width Element.fill
+                    , Brand.defaultPadding
+                    , Background.color Brand.cardColor
+                    , Border.rounded 10
+                    , Border.shadow
+                        { offset = ( 1, 1 )
+                        , size = 4
+                        , blur = 10
+                        , color = Brand.shadowColor
+                        }
+                    ]
+                    [ Element.image
+                        [ Element.width (Element.px 100)
+                        , Border.rounded 50
+                        , Element.clip
+                        , Element.alignTop
+                        , Element.centerX
+                        ]
+                        { src = data.avatarUrl
+                        , description = "Avatar"
+                        }
+                    , Element.el
+                        [ Element.alignTop
+                        , Font.bold
+                        , Element.padding 5
+                        ]
+                      <|
+                        Element.text data.name
+                    , Element.el
+                        [ Element.alignLeft
+                        , Font.color Brand.subtleTextColor
+                        ]
+                      <|
+                        Element.text "Friends:"
+                    , Element.column [ Element.centerX ] <| List.map Element.text data.friends
+                    ]
+                ]
+            ]
