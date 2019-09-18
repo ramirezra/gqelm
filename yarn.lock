@@ -3484,7 +3484,7 @@ node-elm-compiler@5.0.3:
     lodash "4.17.11"
     temp "^0.8.3"
 
-node-elm-compiler@^5.0.3:
+node-elm-compiler@^5.0.4:
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/node-elm-compiler/-/node-elm-compiler-5.0.4.tgz#e139c517c4b91f914cccb0a06e3329e3c49d02ac"
   integrity sha512-VQsT8QSierYGkHzRed+b4MnccQVF1+qPHunE8jBoU7jD6YpuRqCDPzEoC2zfyEJS80qVnlMZrqobLnyjzX9lJg==

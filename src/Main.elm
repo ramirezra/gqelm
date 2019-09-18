@@ -3,23 +3,17 @@ module Main exposing (main)
 import Brand
 import Browser
 import Debug
-import Element exposing (Element)
+import Element 
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Graphql.Http
 import Graphql.Operation exposing (RootQuery)
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Http
-import Json.Decode exposing (Decoder, field, string)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
+import Html exposing (Html)
 import RemoteData exposing (RemoteData)
-import StarWars.Interface exposing (Character)
-import StarWars.Interface.Character as Character
 import StarWars.Object exposing (Human)
-import StarWars.Object.Human as Human exposing (..)
+import StarWars.Object.Human as Human   
 import StarWars.Query as Query
 import StarWars.Scalar exposing (Id)
 
@@ -87,8 +81,8 @@ query : Id -> SelectionSet Response RootQuery
 query id =
     Query.human { id = id } <|
         SelectionSet.map3 Human
-            Human.avatarUrl
             Human.name
+            Human.avatarUrl
             Human.homePlanet
 
 
@@ -100,7 +94,7 @@ query id =
 
 makeRequest : Cmd Msg
 makeRequest =
-    StarWars.Scalar.Id "1001"
+    StarWars.Scalar.Id "1003"
         |> query
         |> Graphql.Http.queryRequest "https://elm-graphql.herokuapp.com"
         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
@@ -140,42 +134,41 @@ viewDocument model =
         RemoteData.NotAsked ->
             { title = "Not Asked"
             , body =
-                [ div [] [ Html.text "Not Asked" ]
+                [ Html.div [] [ Html.text "Not Asked" ]
                 ]
             }
 
         RemoteData.Loading ->
             { title = "Loading"
             , body =
-                [ div [] [ Html.text "Loading" ]
+                [ Html.div [] [ Html.text "Loading" ]
                 ]
             }
 
         RemoteData.Failure err ->
             { title = "Error"
             , body =
-                [ div [] [ Html.text (Debug.toString err) ]
+                [ Html.div [] [ Html.text (Debug.toString err) ]
                 ]
             }
 
         RemoteData.Success data ->
-            { title = "Hello"
-            , body =
-                -- [ div [] [ Html.text data.name ]
-                -- , div [] [ Html.text <| Debug.toString data.id ]
-                -- , div [] (List.map Html.text data.friends)
-                -- -- ]
-                -- [ characterCard (Human "Robinson" "ramirez" (Just "ep")) ]
-                case data.homePlanet of
-                    Just homePlanet ->
-                        [ characterCard (Human data.name data.avatarUrl data.homePlanet) ]
-
-                    Nothing ->
-                        [ characterCard (Human data.name data.avatarUrl data.homePlanet) ]
+            { title = "Star Wars Cards"
+            , body = [ characterCard data]
             }
 
 
-characterCard data =
+
+characterCard : Response -> Html Msg
+characterCard response =
+    let
+       data = case response of
+           Nothing -> (Human "" "" (Just ""))               
+       
+           Just human -> human
+        
+    in
+    
     Element.layout [ Element.centerX ] <|
         Element.column [ Element.centerX, Element.centerY ]
             [ Element.row
@@ -225,9 +218,6 @@ characterCard data =
 
                             Nothing ->
                                 Element.none
-
-                    --     Element.text "Friends:"
-                    -- , Element.column [ Element.centerX ] <| List.map Element.text data.friends
                     ]
-                ]
+                ]                                                                                               
             ]
